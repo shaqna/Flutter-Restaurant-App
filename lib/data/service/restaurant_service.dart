@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_restaurant_app/data/database/local_database.dart';
 import 'package:flutter_restaurant_app/data/model/restaurant.dart';
 import 'package:flutter_restaurant_app/data/model/restaurant_detail.dart';
 import 'package:flutter_restaurant_app/utils/const_object.dart';
@@ -10,7 +11,10 @@ import 'package:http/http.dart' as http;
 enum State { empty }
 
 class RestaurantService {
-  static Future<List<Restaurant>> getRestaurants() async {
+  final http.Client client;
+  RestaurantService({required this.client});
+
+  Future<List<Restaurant>> getRestaurants() async {
     try {
       var response = await http.get(Uri.parse('$baseUrl/list'));
       var jsonResult = jsonDecode(response.body);
@@ -33,12 +37,14 @@ class RestaurantService {
     }
   }
 
-  static Future<RestaurantDetail> getRestaurantById(String id) async {
+  Future<RestaurantDetail> getRestaurantById(String id) async {
     try {
-      var response = await http.get(Uri.parse('$baseUrl/detail/$id'));
+      http.Response response = await client.get(Uri.parse('$baseUrl/detail/$id'));
       var jsonResult = jsonDecode(response.body);
       var restaurantDetail =
           RestaurantDetail.fromJson(jsonResult['restaurant']);
+
+      restaurantDetail.isFavorite = await LocalDatabase().isFavorite(id);
 
       return restaurantDetail;
     } catch (error) {
@@ -46,10 +52,10 @@ class RestaurantService {
     }
   }
 
-  static Future<List<Restaurant>> searchRestaurant(String query) async {
+  Future<List<Restaurant>> searchRestaurant(String query) async {
     try {
       query = query.replaceAll(' ', '%20');
-      var response = await http.get(Uri.parse('$baseUrl/search?q=$query'));
+      var response = await client.get(Uri.parse('$baseUrl/search?q=$query'));
       var jsonResult = jsonDecode(response.body);
 
       List<Restaurant> restaurants = [];

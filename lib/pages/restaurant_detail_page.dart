@@ -1,10 +1,12 @@
+import 'package:favorite_button/favorite_button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_restaurant_app/data/model/restaurant_detail.dart';
+import 'package:flutter_restaurant_app/helper/navigation_helper.dart';
+import 'package:flutter_restaurant_app/provider/favorite_provider.dart';
 import 'package:flutter_restaurant_app/utils/const_object.dart';
+import 'package:provider/provider.dart';
 
 class RestaurantDetailPage extends StatefulWidget {
   static const routeName = '/restaurant-detail';
@@ -28,17 +30,42 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage>
               expandedHeight: 200,
               leading: GestureDetector(
                 onTap: () {
-                  Navigator.of(context).pop();
+                  NavigationHelper.back();
+                  //Navigator.pop(context);
                 },
                 child: Container(
                   margin: const EdgeInsets.only(left: 8, top: 14),
-                  child: Icon(Icons.arrow_back),
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.deepOrange,
                   ),
+                  child: const Icon(Icons.arrow_back),
                 ),
               ),
+              actions: [
+                Container(
+                  width: 60,
+                  margin: const EdgeInsets.only(right: 4, top: 14),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black26,
+                  ),
+                  child: FavoriteButton(
+                    iconSize: 40,
+                    isFavorite: widget.restaurant.isFavorite,
+                    iconDisabledColor: Colors.white,
+                    valueChanged: (isFavorite) async {
+                      if (isFavorite) {
+                        Provider.of<FavoriteProvider>(context, listen: false)
+                            .addRestaurant(widget.restaurant.restaurant);
+                      } else {
+                        Provider.of<FavoriteProvider>(context, listen: false)
+                            .deleteRestaurant(widget.restaurant.restaurant.id);
+                      }
+                    },
+                  ),
+                )
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Hero(
                   tag: widget.restaurant.restaurant.id,

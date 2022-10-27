@@ -2,12 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_restaurant_app/data/model/restaurant.dart';
 import 'package:flutter_restaurant_app/data/model/restaurant_detail.dart';
 import 'package:flutter_restaurant_app/data/service/restaurant_service.dart';
+import 'package:flutter_restaurant_app/helper/navigation_helper.dart';
 import 'package:flutter_restaurant_app/pages/restaurant_detail_page.dart';
+import 'package:flutter_restaurant_app/utils/state_ui.dart';
 import 'package:flutter_restaurant_app/utils/strings.dart';
 
-enum StateUI { loading, noData, hasData, error }
-
 class RestaurantProvider extends ChangeNotifier {
+  late final RestaurantService _service;
   late List<Restaurant> _restaurants;
   List<Restaurant> get restaurant => _restaurants;
 
@@ -17,7 +18,8 @@ class RestaurantProvider extends ChangeNotifier {
   String _message = '';
   String get message => _message;
 
-  RestaurantProvider() {
+  RestaurantProvider({required RestaurantService service}) {
+    _service = service;
     _fetchRestaurantData();
   }
 
@@ -29,7 +31,7 @@ class RestaurantProvider extends ChangeNotifier {
   Future<dynamic> _fetchRestaurantData() async {
     try {
       _state = StateUI.loading;
-      final restaurants = await RestaurantService.getRestaurants();
+      final restaurants = await _service.getRestaurants();
       if (restaurants.isEmpty) {
         setStateWithNotifyListener(StateUI.noData);
         return _message = emptyRestaurantMessage;
@@ -49,7 +51,7 @@ class RestaurantProvider extends ChangeNotifier {
         _fetchRestaurantData();
       } else {
         _state = StateUI.loading;
-        final restaurants = await RestaurantService.searchRestaurant(query);
+        final restaurants = await _service.searchRestaurant(query);
         if (restaurant.isEmpty) {
           setStateWithNotifyListener(StateUI.noData);
           _message = emptyRestaurantMessage;
@@ -65,18 +67,13 @@ class RestaurantProvider extends ChangeNotifier {
   }
 
   void onTapRestaurantItem(BuildContext context, String id) async {
-    try {
-      _state = StateUI.loading;
-      RestaurantDetail restaurant =
-          await RestaurantService.getRestaurantById(id);
+  
+      RestaurantDetail restaurant = await _service.getRestaurantById(id);
 
-      setStateWithNotifyListener(StateUI.hasData);
+      NavigationHelper.intentWithData(
+          RestaurantDetailPage.routeName, restaurant);
 
-      Navigator.pushNamed(context, RestaurantDetailPage.routeName,
-          arguments: restaurant);
-    } catch (error) {
-      _message = error.toString();
-      setStateWithNotifyListener(StateUI.error);
-    }
+    // Navigator.pushNamed(context, RestaurantDetailPage.routeName,
+    //         arguments: restaurant);
   }
 }

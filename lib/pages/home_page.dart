@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_restaurant_app/data/model/restaurant.dart';
+import 'package:flutter_restaurant_app/pages/favorite_page.dart';
+import 'package:flutter_restaurant_app/pages/settings_page.dart';
 import 'package:flutter_restaurant_app/provider/restaurant_provider.dart';
 import 'package:flutter_restaurant_app/utils/const_object.dart';
+import 'package:flutter_restaurant_app/utils/state_ui.dart';
 import 'package:flutter_restaurant_app/widgets/platform_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -22,43 +25,90 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Restaurant App'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, FavoritePage.routeName);
+              },
+              child: const Icon(
+                Icons.favorite,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, SettingsPage.routeName);
+              },
+              child: const Icon(
+                Icons.settings,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
       body: _buildContent(context),
     );
   }
 
   Widget _buildIos(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Restaurant App'),
-        transitionBetweenRoutes: false,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Restaurant App'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, FavoritePage.routeName);
+              },
+              child: const Icon(
+                Icons.favorite,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, SettingsPage.routeName);
+              },
+              child: const Icon(
+                Icons.settings,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
-      child: _buildContent(context),
+      body: _buildContent(context),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => RestaurantProvider(),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 6, right: 6, top: 3),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Consumer<RestaurantProvider>(
-                builder: (context, provider, _) => TextFormField(
-                  decoration: const InputDecoration(hintText: "Cari Restoran"),
-                  onChanged: (query) {
-                    provider.searchRestaurant(query);
-                  },
-                ),
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(left: 6, right: 6, top: 3),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: TextFormField(
+              decoration: const InputDecoration(hintText: "Cari Restoran"),
+              onChanged: (query) {
+                Provider.of<RestaurantProvider>(context, listen: false)
+                    .searchRestaurant(query);
+              },
             ),
-            const SizedBox(height: 4),
-            Expanded(child: _listBuilder())
-          ],
-        ),
+          ),
+          const SizedBox(height: 4),
+          Expanded(child: _listBuilder())
+        ],
       ),
     );
   }
@@ -99,7 +149,7 @@ class HomePage extends StatelessWidget {
       ),
       title: Text(restaurant.name),
       subtitle: Text(restaurant.city),
-      onTap: () {
+      onTap: () async {
         Provider.of<RestaurantProvider>(context, listen: false)
             .onTapRestaurantItem(context, restaurant.id);
       },
