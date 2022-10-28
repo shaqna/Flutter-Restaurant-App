@@ -16,7 +16,7 @@ class RestaurantService {
 
   Future<List<Restaurant>> getRestaurants() async {
     try {
-      var response = await http.get(Uri.parse('$baseUrl/list'));
+      var response = await client.get(Uri.parse('$baseUrl/list'));
       var jsonResult = jsonDecode(response.body);
       List<Restaurant> restaurants = [];
       if (!jsonResult['error']) {
@@ -39,7 +39,8 @@ class RestaurantService {
 
   Future<RestaurantDetail> getRestaurantById(String id) async {
     try {
-      http.Response response = await client.get(Uri.parse('$baseUrl/detail/$id'));
+      http.Response response =
+          await client.get(Uri.parse('$baseUrl/detail/$id'));
       var jsonResult = jsonDecode(response.body);
       var restaurantDetail =
           RestaurantDetail.fromJson(jsonResult['restaurant']);

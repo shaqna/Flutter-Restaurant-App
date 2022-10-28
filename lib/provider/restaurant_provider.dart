@@ -28,52 +28,57 @@ class RestaurantProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<dynamic> _fetchRestaurantData() async {
+  void _fetchRestaurantData() async {
+    setStateWithNotifyListener(StateUI.loading);
     try {
-      _state = StateUI.loading;
       final restaurants = await _service.getRestaurants();
       if (restaurants.isEmpty) {
+        _message = emptyRestaurantMessage;
         setStateWithNotifyListener(StateUI.noData);
-        return _message = emptyRestaurantMessage;
       } else {
+        _restaurants = restaurants;
         setStateWithNotifyListener(StateUI.hasData);
-        return _restaurants = restaurants;
       }
     } catch (e) {
+      _message = e.toString();
       setStateWithNotifyListener(StateUI.error);
-      return _message = e.toString();
     }
   }
 
   void searchRestaurant(String query) async {
-    try {
-      if (query.isEmpty) {
-        _fetchRestaurantData();
-      } else {
-        _state = StateUI.loading;
+    if (query.isEmpty) {
+      _fetchRestaurantData();
+    } else {
+      setStateWithNotifyListener(StateUI.loading);
+      try {
         final restaurants = await _service.searchRestaurant(query);
-        if (restaurant.isEmpty) {
-          setStateWithNotifyListener(StateUI.noData);
+        if (restaurants.isEmpty) {
           _message = emptyRestaurantMessage;
+          setStateWithNotifyListener(StateUI.noData);
         } else {
-          setStateWithNotifyListener(StateUI.hasData);
           _restaurants = restaurants;
+          setStateWithNotifyListener(StateUI.hasData);
         }
+      } catch (e) {
+        _message = e.toString();
+        setStateWithNotifyListener(StateUI.error);
       }
-    } catch (e) {
-      setStateWithNotifyListener(StateUI.error);
-      _message = e.toString();
     }
   }
 
   void onTapRestaurantItem(BuildContext context, String id) async {
-  
+    setStateWithNotifyListener(StateUI.loading);
+    try {
       RestaurantDetail restaurant = await _service.getRestaurantById(id);
-
+      setStateWithNotifyListener(StateUI.hasData);
       NavigationHelper.intentWithData(
           RestaurantDetailPage.routeName, restaurant);
 
-    // Navigator.pushNamed(context, RestaurantDetailPage.routeName,
-    //         arguments: restaurant);
+      // Navigator.pushNamed(context, RestaurantDetailPage.routeName,
+      //         arguments: restaurant);
+    } catch (e) {
+      _message = e.toString();
+      setStateWithNotifyListener(StateUI.error);
+    }
   }
 }

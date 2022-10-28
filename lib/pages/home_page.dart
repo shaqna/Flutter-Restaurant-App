@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_restaurant_app/data/model/restaurant.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_restaurant_app/pages/settings_page.dart';
 import 'package:flutter_restaurant_app/provider/restaurant_provider.dart';
 import 'package:flutter_restaurant_app/utils/const_object.dart';
 import 'package:flutter_restaurant_app/utils/state_ui.dart';
+import 'package:flutter_restaurant_app/utils/strings.dart';
 import 'package:flutter_restaurant_app/widgets/platform_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -143,9 +145,10 @@ class HomePage extends StatelessWidget {
     return ListTile(
       contentPadding:
           const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      leading: Image.network(
-        mediumResolutionPictureUrl + restaurant.pictureId,
-        width: 100.0,
+      leading: CachedNetworkImage(
+        imageUrl: mediumResolutionPictureUrl + restaurant.pictureId,
+        errorWidget: (context, url, error) => const Icon(Icons.error),
+        placeholder: (context, url) => const CircularProgressIndicator(),
       ),
       title: Text(restaurant.name),
       subtitle: Text(restaurant.city),

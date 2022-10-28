@@ -28,6 +28,7 @@ class FavoriteProvider with ChangeNotifier {
 
   Future<dynamic> _getAllRestaurants() async {
     try {
+      _state = StateFavorite.loading;
       final restaurants = await _database.getRestaurants();
       if (restaurants.isEmpty) {
         setStateWithNotifyListener(StateFavorite.empty);

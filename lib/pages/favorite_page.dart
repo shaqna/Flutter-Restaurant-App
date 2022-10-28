@@ -1,13 +1,16 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_restaurant_app/data/model/restaurant.dart';
 import 'package:flutter_restaurant_app/data/model/restaurant_detail.dart';
 import 'package:flutter_restaurant_app/data/service/restaurant_service.dart';
+import 'package:flutter_restaurant_app/helper/navigation_helper.dart';
 import 'package:flutter_restaurant_app/pages/restaurant_detail_page.dart';
 import 'package:flutter_restaurant_app/provider/favorite_provider.dart';
 import 'package:flutter_restaurant_app/provider/restaurant_provider.dart';
 import 'package:flutter_restaurant_app/utils/const_object.dart';
 import 'package:flutter_restaurant_app/utils/state_ui.dart';
+import 'package:flutter_restaurant_app/utils/strings.dart';
 import 'package:flutter_restaurant_app/widgets/platform_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -55,7 +58,7 @@ class FavoritePage extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 6, right: 6),
-      child: Expanded(child: _listBuilder()),
+      child: _listBuilder(),
     );
   }
 
@@ -75,6 +78,10 @@ class FavoritePage extends StatelessWidget {
             return Center(
               child: Text(provider.message),
             );
+          case StateFavorite.loading:
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
         }
       },
     );
@@ -84,19 +91,30 @@ class FavoritePage extends StatelessWidget {
     return ListTile(
       contentPadding:
           const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      leading: Image.network(
-        mediumResolutionPictureUrl + restaurant.pictureId,
-        width: 100.0,
-      ),
+      leading: CachedNetworkImage(
+          imageUrl: mediumResolutionPictureUrl + restaurant.pictureId,
+          errorWidget: (context, url, error) => const Icon(Icons.error),
+          placeholder: (context, url) => const CircularProgressIndicator()),
       title: Text(restaurant.name),
       subtitle: Text(restaurant.city),
       onTap: () async {
-        RestaurantDetail restaurantDetail =
-            await RestaurantService(client: http.Client())
-                .getRestaurantById(restaurant.id);
-
-        Navigator.pushNamed(context, RestaurantDetailPage.routeName,
-            arguments: restaurantDetail);
+        try {
+          RestaurantDetail restaurantDetail =
+              await RestaurantService(client: http.Client())
+                  .getRestaurantById(restaurant.id);
+          NavigationHelper.intentWithData(
+              RestaurantDetailPage.routeName, restaurantDetail);
+          // Navigator.pushNamed(context, RestaurantDetailPage.routeName,
+          //     arguments: restaurantDetail);
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Tidak dapat melihat detail. ${e.toString()}',
+              ),
+            ),
+          );
+        }
       },
     );
   }
